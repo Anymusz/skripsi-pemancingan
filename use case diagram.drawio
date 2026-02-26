@@ -1,0 +1,121 @@
+<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36" version="29.5.2">
+  <diagram name="Halaman-1" id="j6HVeb2UKP5yMvCRJY2H">
+    <mxGraphModel dx="1603" dy="883" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1000" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="system" parent="1" style="rounded=0;whiteSpace=wrap;html=1;strokeWidth=2;" value="" vertex="1">
+          <mxGeometry height="900" width="880" x="290" y="60" as="geometry" />
+        </mxCell>
+        <mxCell id="guest" parent="1" style="shape=umlActor;" value="" vertex="1">
+          <mxGeometry height="120" width="80" x="170" y="160" as="geometry" />
+        </mxCell>
+        <mxCell id="member" parent="1" style="shape=umlActor;" value="" vertex="1">
+          <mxGeometry height="120" width="80" x="170" y="400" as="geometry" />
+        </mxCell>
+        <mxCell id="admin" parent="1" style="shape=umlActor;" value="" vertex="1">
+          <mxGeometry height="120" width="80" x="1220" y="360" as="geometry" />
+        </mxCell>
+        <mxCell id="owner" parent="1" style="shape=umlActor;" value="" vertex="1">
+          <mxGeometry height="120" width="80" x="1220" y="710" as="geometry" />
+        </mxCell>
+        <mxCell id="login" parent="1" style="ellipse;" value="Login ke Sistem" vertex="1">
+          <mxGeometry height="60" width="200" x="500" y="130" as="geometry" />
+        </mxCell>
+        <mxCell id="leaderboard" parent="1" style="ellipse;" value="Lihat Leaderboard" vertex="1">
+          <mxGeometry height="60" width="200" x="575" y="220" as="geometry" />
+        </mxCell>
+        <mxCell id="order" parent="1" style="ellipse;" value="Order Makanan/Minuman" vertex="1">
+          <mxGeometry height="70" width="250" x="550" y="320" as="geometry" />
+        </mxCell>
+        <mxCell id="profile" parent="1" style="ellipse;" value="Lihat Profil &amp; Poin" vertex="1">
+          <mxGeometry height="60" width="200" x="575" y="430" as="geometry" />
+        </mxCell>
+        <mxCell id="verifyMember" parent="1" style="ellipse;" value="Verifikasi Kedatangan Member" vertex="1">
+          <mxGeometry height="60" width="230" x="820" y="250" as="geometry" />
+        </mxCell>
+        <mxCell id="inputOrder" parent="1" style="ellipse;" value="Input Pesanan" vertex="1">
+          <mxGeometry height="60" width="230" x="810" y="420" as="geometry" />
+        </mxCell>
+        <mxCell id="checkout" parent="1" style="ellipse;" value="Checkout Transaksi" vertex="1">
+          <mxGeometry height="60" width="230" x="810" y="510" as="geometry" />
+        </mxCell>
+        <mxCell id="registerMember" parent="1" style="ellipse;" value="Daftarkan Membership" vertex="1">
+          <mxGeometry height="60" width="230" x="850" y="600" as="geometry" />
+        </mxCell>
+        <mxCell id="approveMember" parent="1" style="ellipse;" value="Approve Membership" vertex="1">
+          <mxGeometry height="60" width="220" x="575" y="630" as="geometry" />
+        </mxCell>
+        <mxCell id="restock" parent="1" style="ellipse;" value="Restock Ikan" vertex="1">
+          <mxGeometry height="60" width="200" x="575" y="710" as="geometry" />
+        </mxCell>
+        <mxCell id="report" parent="1" style="ellipse;" value="Lihat Laporan Keuangan" vertex="1">
+          <mxGeometry height="60" width="230" x="570" y="790" as="geometry" />
+        </mxCell>
+        <mxCell id="reward" parent="1" style="ellipse;" value="Proses Reward Leaderboard Bulanan" vertex="1">
+          <mxGeometry height="60" width="280" x="550" y="870" as="geometry" />
+        </mxCell>
+        <mxCell id="2" edge="1" parent="1" source="guest" style="endArrow=none;startArrow=none;" target="login">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="3" edge="1" parent="1" source="guest" style="endArrow=none;startArrow=none;" target="leaderboard">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="4" edge="1" parent="1" source="guest" style="endArrow=none;startArrow=none;" target="order">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="5" edge="1" parent="1" source="member" style="endArrow=none;startArrow=none;" target="login">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="6" edge="1" parent="1" source="member" style="endArrow=none;startArrow=none;" target="leaderboard">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="7" edge="1" parent="1" source="member" style="endArrow=none;startArrow=none;" target="order">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="8" edge="1" parent="1" source="member" style="endArrow=none;startArrow=none;" target="profile">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="9" edge="1" parent="1" source="admin" style="endArrow=none;startArrow=none;" target="verifyMember">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="10" edge="1" parent="1" source="admin" style="endArrow=none;startArrow=none;" target="inputOrder">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="11" edge="1" parent="1" source="admin" style="endArrow=none;startArrow=none;" target="checkout">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="12" edge="1" parent="1" source="admin" style="endArrow=none;startArrow=none;" target="registerMember">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="13" edge="1" parent="1" source="admin" style="endArrow=none;startArrow=none;" target="order">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="14" edge="1" parent="1" source="owner" style="endArrow=none;startArrow=none;" target="approveMember">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="15" edge="1" parent="1" source="owner" style="endArrow=none;startArrow=none;" target="restock">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="16" edge="1" parent="1" source="owner" style="endArrow=none;startArrow=none;" target="report">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="17" edge="1" parent="1" source="owner" style="endArrow=none;startArrow=none;" target="reward">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="LtHFdwUc13AtNmMhMlpA-26" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="Pengunjung" vertex="1">
+          <mxGeometry height="30" width="60" x="180" y="280" as="geometry" />
+        </mxCell>
+        <mxCell id="LtHFdwUc13AtNmMhMlpA-27" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="Member" vertex="1">
+          <mxGeometry height="30" width="60" x="180" y="520" as="geometry" />
+        </mxCell>
+        <mxCell id="LtHFdwUc13AtNmMhMlpA-28" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="Admin" vertex="1">
+          <mxGeometry height="30" width="60" x="1230" y="480" as="geometry" />
+        </mxCell>
+        <mxCell id="LtHFdwUc13AtNmMhMlpA-29" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="Pemilik" vertex="1">
+          <mxGeometry height="30" width="60" x="1230" y="830" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
