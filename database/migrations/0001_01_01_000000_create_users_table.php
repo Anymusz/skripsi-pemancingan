@@ -14,9 +14,14 @@ return new class extends Migration
         Schema::create('users', function (Blueprint $table) {
             $table->id();
             $table->string('name');
+            $table->string('phone')->nullable();
             $table->string('email')->unique();
+            $table->string('address')->nullable();
+            $table->enum('validation_status', ['menunggu', 'aktif', 'ditolak'])->default('menunggu');
+            $table->string('member_id')->unique()->nullable();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
+            $table->timestamp('last_transaction_at')->nullable();
             $table->rememberToken();
             $table->timestamps();
         });

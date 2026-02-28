@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\User;
+use App\Models\FishType;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
@@ -15,11 +16,43 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
+        // 1. Seed Roles & Permissions terlebih dahulu
+        $this->call(RoleSeeder::class);
 
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
+        // 2. Buat akun Owner default
+        $owner = User::create([
+            'name' => 'Owner Pemancingan',
+            'email' => 'owner@pemancingan.com',
+            'phone' => '081234567890',
+            'password' => bcrypt('password'),
+            'validation_status' => 'aktif',
+        ]);
+        $owner->assignRole('Owner');
+
+        // 3. Seed data jenis ikan dengan threshold minimum
+        FishType::create([
+            'name' => 'Patin',
+            'price_per_kg' => 35000,
+            'stock_kg' => 100,
+            'min_stock_threshold' => 50,
+        ]);
+        FishType::create([
+            'name' => 'Gurame',
+            'price_per_kg' => 50000,
+            'stock_kg' => 30,
+            'min_stock_threshold' => 10,
+        ]);
+        FishType::create([
+            'name' => 'Nila',
+            'price_per_kg' => 30000,
+            'stock_kg' => 60,
+            'min_stock_threshold' => 25,
+        ]);
+        FishType::create([
+            'name' => 'Bawal',
+            'price_per_kg' => 45000,
+            'stock_kg' => 15,
+            'min_stock_threshold' => 5,
         ]);
     }
 }
