@@ -37,6 +37,11 @@ class MenuResource extends Resource
         return 2;
     }
 
+    public static function canAccess(): bool
+    {
+        return auth()->user()?->can('manage-menus') ?? false;
+    }
+
     public static function form(Schema $schema): Schema
     {
         return $schema
