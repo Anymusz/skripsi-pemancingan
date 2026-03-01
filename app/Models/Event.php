@@ -13,6 +13,8 @@ class Event extends Model
         'title',
         'description',
         'event_date',
+        'end_date',
+        'category',
         'status',
     ];
 
@@ -20,6 +22,12 @@ class Event extends Model
     {
         return [
             'event_date' => 'date',
+            'end_date'   => 'date',
         ];
+    }
+
+    public function isPublished(): bool
+    {
+        return $this->status === 'dipublikasikan';
     }
 }

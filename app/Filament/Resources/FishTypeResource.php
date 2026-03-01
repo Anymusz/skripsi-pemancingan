@@ -8,6 +8,7 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Schemas\Components\Section;
 use Filament\Forms\Components\TextInput;
+use Filament\Notifications\Notification;
 use Filament\Tables;
 use Filament\Tables\Table;
 
@@ -66,12 +67,14 @@ class FishTypeResource extends Resource
                             ->prefix('Rp')
                             ->required(),
                         TextInput::make('stock_kg')
-                            ->label('Stok (Kg)')
+                            ->label('Stok Awal (Kg)')
+                            ->helperText('Untuk menambah stok gunakan tombol Restock di tabel.')
                             ->numeric()
                             ->suffix('kg')
                             ->required(),
                         TextInput::make('min_stock_threshold')
                             ->label('Batas Minimum Stok (Kg)')
+                            ->helperText('Sistem akan kirim alert jika stok di bawah angka ini.')
                             ->numeric()
                             ->suffix('kg')
                             ->required(),
@@ -95,18 +98,60 @@ class FishTypeResource extends Resource
                     ->label('Stok (Kg)')
                     ->numeric(2)
                     ->sortable()
-                    ->color(fn (FishType $record): string => $record->isBelowThreshold() ? 'danger' : 'success'),
+                    ->color(fn (FishType $record): string => $record->isBelowThreshold() ? 'danger' : 'success')
+                    ->weight(fn (FishType $record): string => $record->isBelowThreshold() ? 'bold' : 'normal'),
                 Tables\Columns\TextColumn::make('min_stock_threshold')
                     ->label('Min. Stok')
                     ->numeric(2)
                     ->suffix(' kg'),
+                Tables\Columns\IconColumn::make('stock_status')
+                    ->label('Status')
+                    ->state(fn (FishType $record): bool => !$record->isBelowThreshold())
+                    ->boolean()
+                    ->trueIcon('heroicon-o-check-circle')
+                    ->falseIcon('heroicon-o-exclamation-triangle')
+                    ->trueColor('success')
+                    ->falseColor('danger')
+                    ->tooltip(fn (FishType $record): string => $record->isBelowThreshold() ? 'Stok menipis!' : 'Stok aman'),
                 Tables\Columns\TextColumn::make('last_restocked_at')
                     ->label('Terakhir Restock')
                     ->dateTime('d M Y H:i')
                     ->placeholder('Belum pernah'),
             ])
             ->actions([
+                // Tombol Restock
+                Tables\Actions\Action::make('restock')
+                    ->label('Restock')
+                    ->icon('heroicon-o-plus-circle')
+                    ->color('success')
+                    ->form([
+                        TextInput::make('jumlah_restock')
+                            ->label('Jumlah Restock (Kg)')
+                            ->numeric()
+                            ->suffix('kg')
+                            ->required()
+                            ->minValue(0.1)
+                            ->hint('Masukkan berat ikan yang akan ditambahkan ke stok.'),
+                    ])
+                    ->action(function (FishType $record, array $data) {
+                        $tambahan = (float) $data['jumlah_restock'];
+                        $record->update([
+                            'stock_kg'         => $record->stock_kg + $tambahan,
+                            'last_restocked_at' => now(),
+                        ]);
+
+                        Notification::make()
+                            ->title('Restock Berhasil!')
+                            ->body("Stok {$record->name} bertambah {$tambahan} kg. Total stok sekarang: " . ($record->stock_kg) . " kg.")
+                            ->success()
+                            ->send();
+                    })
+                    ->modalHeading(fn (FishType $record): string => "Restock Ikan — {$record->name}")
+                    ->modalDescription(fn (FishType $record): string => "Stok saat ini: {$record->stock_kg} kg")
+                    ->modalSubmitActionLabel('Simpan Restock'),
+
                 Tables\Actions\EditAction::make(),
+                Tables\Actions\DeleteAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -118,9 +163,9 @@ class FishTypeResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListFishTypes::route('/'),
+            'index'  => Pages\ListFishTypes::route('/'),
             'create' => Pages\CreateFishType::route('/create'),
-            'edit' => Pages\EditFishType::route('/{record}/edit'),
+            'edit'   => Pages\EditFishType::route('/{record}/edit'),
         ];
     }
 }
