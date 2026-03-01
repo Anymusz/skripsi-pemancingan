@@ -1,93 +1,322 @@
 <x-filament-panels::page>
-    <form wire:submit="save">
+    @push('styles')
+    <style>
+        .permission-page-wrapper {
+            font-family: 'Inter', sans-serif;
+        }
 
-        {{-- Role Selector Tabs --}}
-        <div class="flex items-center gap-2 mb-6 p-1 bg-gray-100 dark:bg-gray-800 rounded-xl w-fit">
-            @foreach($this->getRoles() as $role)
-                @php
-                    $isActive = $this->activeRole === (string) $role->id;
-                    $permCount = count($this->data["role_{$role->id}"] ?? []);
-                    $totalPerms = \Spatie\Permission\Models\Permission::count();
-                @endphp
-                <button
-                    type="button"
-                    wire:click="toggleRole('{{ $role->id }}')"
-                    class="flex items-center gap-2.5 px-5 py-2.5 rounded-lg text-sm font-medium transition-all duration-200
-                        {{ $isActive
-                            ? 'bg-white dark:bg-gray-700 text-primary-600 dark:text-primary-400 shadow-sm ring-1 ring-gray-200 dark:ring-gray-600'
-                            : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
-                        }}"
-                >
-                    <span class="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white
-                        {{ match($role->name) {
-                            'Pegawai' => 'bg-amber-500',
-                            'Member' => 'bg-emerald-500',
-                            'Guest' => 'bg-gray-400',
-                            default => 'bg-blue-500',
-                        } }}
-                    ">
-                        {{ strtoupper(substr($role->name, 0, 1)) }}
-                    </span>
-                    <div class="text-left">
-                        <div>{{ $role->name }}</div>
-                        @if($isActive)
-                            <div class="text-[10px] text-gray-400 -mt-0.5">{{ $permCount }}/{{ $totalPerms }} akses</div>
-                        @endif
-                    </div>
-                </button>
-            @endforeach
-        </div>
+        /* Role Selector */
+        .role-selector {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 28px;
+            flex-wrap: wrap;
+        }
 
-        {{-- Permission Table --}}
-        @if($this->activeRole)
-            @php $roleKey = "role_{$this->activeRole}"; @endphp
+        .role-card {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 20px;
+            border-radius: 14px;
+            border: 2px solid transparent;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            background: white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+            min-width: 160px;
+        }
 
-            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10 overflow-hidden">
-                @foreach($this->getGroupedPermissions() as $category => $permissions)
-                    {{-- Category Header --}}
-                    <div class="px-5 py-2.5 bg-gray-50 dark:bg-gray-900 border-b border-gray-100 dark:border-gray-700">
-                        <span class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">{{ $category }}</span>
-                    </div>
+        .dark .role-card {
+            background: rgb(31 41 55);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+        }
 
-                    {{-- Permission Rows --}}
-                    @foreach($permissions as $permId => $permLabel)
-                        @php
-                            $isChecked = in_array($permId, $this->data[$roleKey] ?? []);
-                        @endphp
-                        <label class="flex items-center justify-between px-5 py-3 border-b border-gray-50 dark:border-gray-700/50 cursor-pointer hover:bg-gray-50/50 dark:hover:bg-gray-700/30 transition-colors group">
-                            <span class="text-sm text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white transition-colors">
-                                {{ $permLabel }}
-                            </span>
-                            <div class="relative">
-                                <input
-                                    type="checkbox"
-                                    wire:model.defer="data.{{ $roleKey }}"
-                                    value="{{ $permId }}"
-                                    class="sr-only peer"
-                                >
-                                {{-- Toggle Switch --}}
-                                <div class="w-9 h-5 bg-gray-200 dark:bg-gray-600 rounded-full peer peer-checked:bg-primary-500 transition-colors"></div>
-                                <div class="absolute left-0.5 top-0.5 w-4 h-4 bg-white rounded-full shadow peer-checked:translate-x-4 transition-transform"></div>
-                            </div>
-                        </label>
-                    @endforeach
+        .role-card:hover:not(.active) {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+
+        .role-card.active.pegawai  { border-color: #f59e0b; background: #fffbeb; }
+        .role-card.active.member   { border-color: #10b981; background: #f0fdf4; }
+        .role-card.active.guest    { border-color: #6b7280; background: #f9fafb; }
+
+        .dark .role-card.active.pegawai { background: rgba(245,158,11,0.1); }
+        .dark .role-card.active.member  { background: rgba(16,185,129,0.1); }
+        .dark .role-card.active.guest   { background: rgba(107,114,128,0.1); }
+
+        .role-avatar {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 16px;
+            color: white;
+            flex-shrink: 0;
+        }
+
+        .role-info h4 { font-size: 14px; font-weight: 600; margin: 0; color: #111827; }
+        .role-info p  { font-size: 11px; margin: 0; color: #6b7280; }
+        .dark .role-info h4 { color: #f9fafb; }
+
+        /* Permission Panel */
+        .permission-panel {
+            background: white;
+            border-radius: 18px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04);
+        }
+
+        .dark .permission-panel {
+            background: rgb(31 41 55);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+        }
+
+        .permission-panel-header {
+            padding: 20px 24px 16px;
+            border-bottom: 1px solid #f3f4f6;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .dark .permission-panel-header { border-color: rgb(55 65 81); }
+
+        .permission-panel-header h3 {
+            font-size: 15px;
+            font-weight: 600;
+            color: #111827;
+            margin: 0;
+        }
+
+        .dark .permission-panel-header h3 { color: #f9fafb; }
+
+        .perm-count-badge {
+            font-size: 11px;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+
+        /* Category Section */
+        .category-section { border-bottom: 1px solid #f3f4f6; }
+        .dark .category-section { border-color: rgb(55 65 81); }
+        .category-section:last-child { border-bottom: none; }
+
+        .category-header {
+            padding: 10px 24px 8px;
+            background: #fafafa;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .dark .category-header { background: rgb(17 24 39); }
+
+        .category-title {
+            font-size: 11.5px;
+            font-weight: 700;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            color: #9ca3af;
+        }
+
+        .perm-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 13px 24px;
+            border-top: 1px solid #f9fafb;
+            transition: background 0.15s;
+            cursor: pointer;
+        }
+
+        .dark .perm-row { border-color: rgba(255,255,255,0.04); }
+        .perm-row:hover { background: #fafafa; }
+        .dark .perm-row:hover { background: rgba(255,255,255,0.02); }
+
+        .perm-label {
+            font-size: 13.5px;
+            color: #374151;
+        }
+
+        .dark .perm-label { color: #d1d5db; }
+
+        /* Toggle Switch */
+        .toggle-wrap { position: relative; display: inline-flex; align-items: center; }
+        .toggle-wrap input[type="checkbox"] { position: absolute; opacity: 0; width: 0; height: 0; }
+
+        .toggle-track {
+            width: 40px;
+            height: 22px;
+            border-radius: 11px;
+            background: #e5e7eb;
+            transition: background 0.2s ease;
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .dark .toggle-track { background: rgb(55 65 81); }
+
+        .toggle-thumb {
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+            transition: transform 0.2s ease;
+        }
+
+        .toggle-wrap input:checked + .toggle-track { background: #6366f1; }
+        .toggle-wrap input:checked + .toggle-track .toggle-thumb { transform: translateX(18px); }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 64px 24px;
+            background: white;
+            border-radius: 18px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+        }
+
+        .dark .empty-state { background: rgb(31 41 55); }
+
+        .empty-icon {
+            width: 56px;
+            height: 56px;
+            background: #f3f4f6;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 14px;
+        }
+
+        .dark .empty-icon { background: rgb(55 65 81); }
+
+        /* Save Button */
+        .save-section {
+            margin-top: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+    </style>
+    @endpush
+
+    <div class="permission-page-wrapper">
+        <form wire:submit="save">
+
+            {{-- ===  Role Selector === --}}
+            <div class="role-selector">
+                @foreach($this->getRoles() as $role)
+                    @php
+                        $isActive  = $this->activeRole === (string) $role->id;
+                        $roleKey   = "role_{$role->id}";
+                        $permCount = count($this->data[$roleKey] ?? []);
+                        $total     = \Spatie\Permission\Models\Permission::count();
+                        $colorClass = match($role->name) {
+                            'Pegawai' => 'pegawai',
+                            'Member'  => 'member',
+                            'Guest'   => 'guest',
+                            default   => 'guest',
+                        };
+                        $avatarBg = match($role->name) {
+                            'Pegawai' => '#f59e0b',
+                            'Member'  => '#10b981',
+                            'Guest'   => '#6b7280',
+                            default   => '#6366f1',
+                        };
+                    @endphp
+                    <button
+                        type="button"
+                        wire:click="toggleRole('{{ $role->id }}')"
+                        class="role-card {{ $colorClass }} {{ $isActive ? 'active' : '' }}"
+                    >
+                        <div class="role-avatar" style="background: {{ $avatarBg }}">
+                            {{ strtoupper(substr($role->name, 0, 1)) }}
+                        </div>
+                        <div class="role-info">
+                            <h4>{{ $role->name }}</h4>
+                            <p>{{ $permCount }} / {{ $total }} akses</p>
+                        </div>
+                    </button>
                 @endforeach
             </div>
 
-            <div class="mt-5">
-                <x-filament::button type="submit" size="lg">
-                    Simpan Perubahan
-                </x-filament::button>
-            </div>
-        @else
-            {{-- Empty State --}}
-            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10 p-12 text-center">
-                <div class="w-12 h-12 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center mx-auto mb-3">
-                    <x-heroicon-o-cursor-arrow-rays class="w-6 h-6 text-gray-400"/>
-                </div>
-                <p class="text-sm text-gray-500 dark:text-gray-400">Pilih role di atas untuk mengatur akses</p>
-            </div>
-        @endif
+            {{-- === Permission Panel === --}}
+            @if($this->activeRole)
+                @php
+                    $activeRoleObj = \Spatie\Permission\Models\Role::find($this->activeRole);
+                    $roleKey       = "role_{$this->activeRole}";
+                    $permCount     = count($this->data[$roleKey] ?? []);
+                    $total         = \Spatie\Permission\Models\Permission::count();
+                    $badgeColor    = match($activeRoleObj?->name) {
+                        'Pegawai' => 'background:#fef3c7;color:#92400e',
+                        'Member'  => 'background:#d1fae5;color:#065f46',
+                        'Guest'   => 'background:#f3f4f6;color:#374151',
+                        default   => 'background:#ede9fe;color:#5b21b6',
+                    };
+                @endphp
 
-    </form>
+                <div class="permission-panel">
+                    <div class="permission-panel-header">
+                        <h3>Hak Akses — {{ $activeRoleObj?->name }}</h3>
+                        <span class="perm-count-badge" style="{{ $badgeColor }}">
+                            {{ $permCount }} aktif dari {{ $total }}
+                        </span>
+                    </div>
+
+                    @foreach($this->getGroupedPermissions() as $category => $permissions)
+                        <div class="category-section">
+                            <div class="category-header">
+                                <span class="category-title">{{ $category }}</span>
+                            </div>
+
+                            @foreach($permissions as $permId => $permLabel)
+                                <label class="perm-row">
+                                    <span class="perm-label">{{ $permLabel }}</span>
+                                    <div class="toggle-wrap">
+                                        <input
+                                            type="checkbox"
+                                            wire:model.defer="data.{{ $roleKey }}"
+                                            value="{{ $permId }}"
+                                            id="perm-{{ $this->activeRole }}-{{ $permId }}"
+                                        >
+                                        <div class="toggle-track">
+                                            <div class="toggle-thumb"></div>
+                                        </div>
+                                    </div>
+                                </label>
+                            @endforeach
+                        </div>
+                    @endforeach
+                </div>
+
+                <div class="save-section">
+                    <x-filament::button type="submit" size="lg">
+                        Simpan Perubahan
+                    </x-filament::button>
+                    <span class="text-sm text-gray-400">Perubahan berlaku setelah disimpan</span>
+                </div>
+
+            @else
+                <div class="empty-state">
+                    <div class="empty-icon">
+                        <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                        </svg>
+                    </div>
+                    <p style="font-size:14px;color:#9ca3af;margin:0">Pilih role di atas untuk mengatur hak akses</p>
+                </div>
+            @endif
+
+        </form>
+    </div>
 </x-filament-panels::page>
