@@ -22,22 +22,22 @@ class DatabaseSeeder extends Seeder
 
         // 2. Buat akun Owner (Pemilik)
         $owner = User::create([
-            'name' => 'Dani Pemilik',
-            'username' => 'danipemilik',
-            'email' => 'danipemilik@gmail.com',
+            'name' => 'Pemilik',
+            'username' => 'pemilik1',
+            'email' => 'pemilik1@gmail.com',
             'phone' => '081234567890',
-            'password' => bcrypt('password'),
+            'password' => bcrypt('12345678'),
             'validation_status' => 'aktif',
         ]);
         $owner->assignRole('Owner');
 
         // 3. Buat akun Pegawai (Admin)
         $pegawai = User::create([
-            'name' => 'Bayu Admin',
-            'username' => 'bayuadmin',
-            'email' => 'bayuadmin@gmail.com',
+            'name' => 'Admin',
+            'username' => 'admin1',
+            'email' => 'admin1@gmail.com',
             'phone' => '081298765432',
-            'password' => bcrypt('password'),
+            'password' => bcrypt('123456789'),
             'validation_status' => 'aktif',
         ]);
         $pegawai->assignRole('Pegawai');
