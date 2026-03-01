@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\User;
 use App\Models\FishType;
+use App\Models\Menu;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
@@ -19,20 +20,22 @@ class DatabaseSeeder extends Seeder
         // 1. Seed Roles & Permissions terlebih dahulu
         $this->call(RoleSeeder::class);
 
-        // 2. Buat akun Owner default
+        // 2. Buat akun Owner (Pemilik)
         $owner = User::create([
-            'name' => 'Owner Pemancingan',
-            'email' => 'owner@pemancingan.com',
+            'name' => 'Dani Pemilik',
+            'username' => 'danipemilik',
+            'email' => 'danipemilik@gmail.com',
             'phone' => '081234567890',
             'password' => bcrypt('password'),
             'validation_status' => 'aktif',
         ]);
         $owner->assignRole('Owner');
 
-        // 3. Buat akun Pegawai default
+        // 3. Buat akun Pegawai (Admin)
         $pegawai = User::create([
-            'name' => 'Pegawai Satu',
-            'email' => 'pegawai@pemancingan.com',
+            'name' => 'Bayu Admin',
+            'username' => 'bayuadmin',
+            'email' => 'bayuadmin@gmail.com',
             'phone' => '081298765432',
             'password' => bcrypt('password'),
             'validation_status' => 'aktif',
@@ -64,5 +67,11 @@ class DatabaseSeeder extends Seeder
             'stock_kg' => 15,
             'min_stock_threshold' => 5,
         ]);
+
+        // 5. Seed data menu F&B
+        Menu::create(['name' => 'Nasi Goreng', 'type' => 'food', 'price' => 15000, 'is_available' => true]);
+        Menu::create(['name' => 'Ayam Bakar', 'type' => 'food', 'price' => 25000, 'is_available' => true]);
+        Menu::create(['name' => 'Es Teh Manis', 'type' => 'beverage', 'price' => 5000, 'is_available' => true]);
+        Menu::create(['name' => 'Kopi Hitam', 'type' => 'beverage', 'price' => 8000, 'is_available' => true]);
     }
 }

@@ -9,17 +9,36 @@ use Filament\Schemas\Components\Component;
 class Login extends BaseLogin
 {
     /**
-     * Override: ganti label "Email" jadi "Username"
-     * tetapi tetap pakai email sebagai identifier.
+     * Override: login pakai username, bukan email.
      */
     protected function getEmailFormComponent(): Component
     {
-        return TextInput::make('email')
+        return TextInput::make('username')
             ->label('Username')
-            ->placeholder('contoh@email.com')
-            ->email()
+            ->placeholder('contoh: danigaje123')
             ->required()
-            ->autocomplete()
+            ->autocomplete('username')
             ->autofocus();
+    }
+
+    /**
+     * Override: credential pakai username, bukan email.
+     */
+    protected function getCredentialsFromFormData(array $data): array
+    {
+        return [
+            'username' => $data['username'],
+            'password' => $data['password'],
+        ];
+    }
+
+    /**
+     * Override: error message ke field username.
+     */
+    protected function throwFailureValidationException(): never
+    {
+        throw \Illuminate\Validation\ValidationException::withMessages([
+            'data.username' => __('filament-panels::auth/pages/login.messages.failed'),
+        ]);
     }
 }
