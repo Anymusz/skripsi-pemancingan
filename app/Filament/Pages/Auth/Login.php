@@ -2,30 +2,24 @@
 
 namespace App\Filament\Pages\Auth;
 
+use Filament\Auth\Pages\Login as BaseLogin;
 use Filament\Forms\Components\TextInput;
-use Filament\Pages\Auth\Login as BaseLogin;
-use Filament\Schemas\Schema;
+use Filament\Schemas\Components\Component;
 
 class Login extends BaseLogin
 {
     /**
-     * Override form: ganti label "Email" jadi "Username"
-     * tetapi tetap validasi sebagai email di belakang layar.
+     * Override: ganti label "Email" jadi "Username"
+     * tetapi tetap pakai email sebagai identifier.
      */
-    public function form(Schema $schema): Schema
+    protected function getEmailFormComponent(): Component
     {
-        return $schema
-            ->components([
-                TextInput::make('email')
-                    ->label('Username')
-                    ->placeholder('email@contoh.com')
-                    ->email()
-                    ->required()
-                    ->autocomplete('username')
-                    ->autofocus()
-                    ->extraInputAttributes(['tabindex' => 1]),
-                $this->getPasswordFormComponent(),
-                $this->getRememberFormComponent(),
-            ]);
+        return TextInput::make('email')
+            ->label('Username')
+            ->placeholder('contoh@email.com')
+            ->email()
+            ->required()
+            ->autocomplete()
+            ->autofocus();
     }
 }
