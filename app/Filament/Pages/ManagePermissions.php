@@ -56,7 +56,7 @@ class ManagePermissions extends Page
 
     public function toggleRole(string $roleId): void
     {
-        $this->activeRole = ($this->activeRole === $roleId) ? null : $roleId;
+        $this->activeRole = $roleId;
     }
 
     public function getRoles()
