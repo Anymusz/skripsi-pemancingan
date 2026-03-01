@@ -29,7 +29,17 @@ class DatabaseSeeder extends Seeder
         ]);
         $owner->assignRole('Owner');
 
-        // 3. Seed data jenis ikan dengan threshold minimum
+        // 3. Buat akun Pegawai default
+        $pegawai = User::create([
+            'name' => 'Pegawai Satu',
+            'email' => 'pegawai@pemancingan.com',
+            'phone' => '081298765432',
+            'password' => bcrypt('password'),
+            'validation_status' => 'aktif',
+        ]);
+        $pegawai->assignRole('Pegawai');
+
+        // 4. Seed data jenis ikan dengan threshold minimum
         FishType::create([
             'name' => 'Patin',
             'price_per_kg' => 35000,
