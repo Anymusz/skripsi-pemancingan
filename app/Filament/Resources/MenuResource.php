@@ -37,9 +37,20 @@ class MenuResource extends Resource
         return 2;
     }
 
-    public static function canAccess(): bool
+    public static function getNavigationBadge(): ?string
     {
-        return auth()->user()?->can('manage-menus') ?? false;
+        if (!auth()->user()?->can('manage-menus')) {
+            return 'Dibatasi';
+        }
+        return null;
+    }
+
+    public static function getNavigationBadgeColor(): string|array|null
+    {
+        if (!auth()->user()?->can('manage-menus')) {
+            return 'danger';
+        }
+        return null;
     }
 
     public static function form(Schema $schema): Schema

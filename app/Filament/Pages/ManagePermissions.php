@@ -4,10 +4,6 @@ namespace App\Filament\Pages;
 
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
-use Filament\Schemas\Schema;
-use Filament\Schemas\Components\Section;
-use Filament\Forms\Components\CheckboxList;
-use Filament\Actions\Action;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
 
@@ -35,9 +31,6 @@ class ManagePermissions extends Page
         return 99;
     }
 
-    /**
-     * Hanya Owner yang bisa akses halaman ini.
-     */
     public static function canAccess(): bool
     {
         return auth()->user()?->hasRole('Owner') ?? false;
@@ -45,11 +38,12 @@ class ManagePermissions extends Page
 
     public ?array $data = [];
 
+    // Track role mana yang sedang dibuka
+    public ?string $activeRole = null;
+
     public function mount(): void
     {
-        // Load permission yang sudah dimiliki tiap role
         $roles = Role::where('name', '!=', 'Owner')->get();
-
         foreach ($roles as $role) {
             $this->data["role_{$role->id}"] = $role->permissions->pluck('id')->toArray();
         }
@@ -60,24 +54,18 @@ class ManagePermissions extends Page
         return 'Kelola Akses Role';
     }
 
-    /**
-     * Ambil semua role selain Owner.
-     */
+    public function toggleRole(string $roleId): void
+    {
+        $this->activeRole = ($this->activeRole === $roleId) ? null : $roleId;
+    }
+
     public function getRoles()
     {
         return Role::where('name', '!=', 'Owner')->get();
     }
 
     /**
-     * Ambil semua permissions, dikelompokkan.
-     */
-    public function getPermissionOptions(): array
-    {
-        return Permission::all()->pluck('name', 'id')->toArray();
-    }
-
-    /**
-     * Ambil permissions dikelompokkan per kategori.
+     * Permissions dikelompokkan per kategori (tanpa emoji).
      */
     public function getGroupedPermissions(): array
     {
@@ -85,17 +73,17 @@ class ManagePermissions extends Page
         $grouped = [];
 
         foreach ($permissions as $perm) {
-            $parts = explode('-', $perm->name, 2);
-            $category = match ($parts[0]) {
-                'manage' => '👤 Manajemen',
-                'validate' => '👤 Manajemen',
-                'create', 'process', 'view' => '💰 Transaksi & Laporan',
-                'export' => '💰 Transaksi & Laporan',
-                'restock' => '🐟 Inventaris',
-                'publish' => '📢 Event',
-                'activate' => '🎫 Tamu',
-                'order' => '🍔 F&B',
-                default => '🔧 Lainnya',
+            $category = match (true) {
+                str_contains($perm->name, 'user') || str_contains($perm->name, 'member') => 'Manajemen User',
+                str_contains($perm->name, 'transaction') || str_contains($perm->name, 'checkout') => 'Transaksi',
+                str_contains($perm->name, 'fish') || str_contains($perm->name, 'restock') => 'Stok Ikan',
+                str_contains($perm->name, 'menu') || str_contains($perm->name, 'fnb') => 'Menu & F&B',
+                str_contains($perm->name, 'event') || str_contains($perm->name, 'publish') => 'Event',
+                str_contains($perm->name, 'report') || str_contains($perm->name, 'export') => 'Laporan',
+                str_contains($perm->name, 'guest') || str_contains($perm->name, 'activate') => 'Tamu',
+                str_contains($perm->name, 'leaderboard') => 'Leaderboard',
+                str_contains($perm->name, 'profile') => 'Profil',
+                default => 'Lainnya',
             };
 
             $label = match ($perm->name) {
@@ -125,9 +113,6 @@ class ManagePermissions extends Page
         return $grouped;
     }
 
-    /**
-     * Simpan perubahan permissions.
-     */
     public function save(): void
     {
         $roles = Role::where('name', '!=', 'Owner')->get();
@@ -135,12 +120,10 @@ class ManagePermissions extends Page
         foreach ($roles as $role) {
             $key = "role_{$role->id}";
             $permissionIds = $this->data[$key] ?? [];
-
             $permissions = Permission::whereIn('id', $permissionIds)->pluck('name')->toArray();
             $role->syncPermissions($permissions);
         }
 
-        // Reset cache
         app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
 
         Notification::make()

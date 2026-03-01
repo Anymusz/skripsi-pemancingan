@@ -37,9 +37,20 @@ class UserResource extends Resource
         return 1;
     }
 
-    public static function canAccess(): bool
+    public static function getNavigationBadge(): ?string
     {
-        return auth()->user()?->can('manage-users') ?? false;
+        if (!auth()->user()?->can('manage-users')) {
+            return 'Dibatasi';
+        }
+        return null;
+    }
+
+    public static function getNavigationBadgeColor(): string|array|null
+    {
+        if (!auth()->user()?->can('manage-users')) {
+            return 'danger';
+        }
+        return null;
     }
 
     public static function form(Schema $schema): Schema
@@ -52,6 +63,10 @@ class UserResource extends Resource
                             ->label('Nama')
                             ->required()
                             ->maxLength(255),
+                        TextInput::make('username')
+                            ->label('Username')
+                            ->required()
+                            ->unique(ignoreRecord: true),
                         TextInput::make('email')
                             ->label('Email')
                             ->email()
@@ -106,6 +121,9 @@ class UserResource extends Resource
                     ->label('Nama')
                     ->searchable()
                     ->sortable(),
+                Tables\Columns\TextColumn::make('username')
+                    ->label('Username')
+                    ->searchable(),
                 Tables\Columns\TextColumn::make('email')
                     ->label('Email')
                     ->searchable(),

@@ -35,9 +35,20 @@ class FishTypeResource extends Resource
         return 1;
     }
 
-    public static function canAccess(): bool
+    public static function getNavigationBadge(): ?string
     {
-        return auth()->user()?->can('manage-fish-stock') ?? false;
+        if (!auth()->user()?->can('manage-fish-stock')) {
+            return 'Dibatasi';
+        }
+        return null;
+    }
+
+    public static function getNavigationBadgeColor(): string|array|null
+    {
+        if (!auth()->user()?->can('manage-fish-stock')) {
+            return 'danger';
+        }
+        return null;
     }
 
     public static function form(Schema $schema): Schema
