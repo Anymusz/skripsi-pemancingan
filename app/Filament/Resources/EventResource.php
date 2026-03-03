@@ -4,6 +4,10 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\EventResource\Pages;
 use App\Models\Event;
+use Filament\Actions\Action;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\EditAction;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Schemas\Components\Section;
@@ -86,8 +90,7 @@ class EventResource extends Resource
                             ->nullable(),
                         DatePicker::make('end_date')
                             ->label('Tanggal Berakhir')
-                            ->nullable()
-                            ->after('event_date'),
+                            ->nullable(),
                         Textarea::make('description')
                             ->label('Deskripsi')
                             ->rows(5)
@@ -156,8 +159,7 @@ class EventResource extends Resource
                     ]),
             ])
             ->actions([
-                // Toggle publish/draft action
-                Tables\Actions\Action::make('togglePublish')
+                Action::make('togglePublish')
                     ->label(fn (Event $record): string => $record->status === 'dipublikasikan' ? 'Jadikan Draft' : 'Publikasikan')
                     ->icon(fn (Event $record): string => $record->status === 'dipublikasikan' ? 'heroicon-o-eye-slash' : 'heroicon-o-eye')
                     ->color(fn (Event $record): string => $record->status === 'dipublikasikan' ? 'gray' : 'success')
@@ -169,13 +171,11 @@ class EventResource extends Resource
                     ->requiresConfirmation(fn (Event $record): bool => $record->status !== 'dipublikasikan')
                     ->modalHeading('Publikasikan Event?')
                     ->modalDescription('Event ini akan ditampilkan kepada semua pengguna.'),
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                EditAction::make(),
+                DeleteAction::make(),
             ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                ]),
+                DeleteBulkAction::make(),
             ]);
     }
 

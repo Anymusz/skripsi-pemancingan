@@ -5,11 +5,13 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\MemberValidationResource\Pages;
 use App\Models\Membership;
 use App\Models\User;
+use Filament\Actions\Action;
+use Filament\Forms\Components\Textarea;
+use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Filament\Notifications\Notification;
 
 class MemberValidationResource extends Resource
 {
@@ -35,9 +37,6 @@ class MemberValidationResource extends Resource
         return 2;
     }
 
-    /**
-     * Badge merah menampilkan jumlah akun yang menunggu validasi.
-     */
     public static function getNavigationBadge(): ?string
     {
         $count = User::where('validation_status', 'menunggu')
@@ -52,9 +51,6 @@ class MemberValidationResource extends Resource
         return 'warning';
     }
 
-    /**
-     * Hanya Owner yang bisa akses validasi member.
-     */
     public static function canAccess(): bool
     {
         return auth()->user()?->hasRole('Owner') ?? false;
@@ -123,7 +119,7 @@ class MemberValidationResource extends Resource
             ])
             ->actions([
                 // Approve
-                Tables\Actions\Action::make('approve')
+                Action::make('approve')
                     ->label('Setujui')
                     ->icon('heroicon-o-check-circle')
                     ->color('success')
@@ -133,7 +129,6 @@ class MemberValidationResource extends Resource
                     ->modalSubmitActionLabel('Ya, Setujui')
                     ->visible(fn (User $record): bool => $record->validation_status === 'menunggu')
                     ->action(function (User $record) {
-                        // Generate Member ID unik
                         $lastMember = User::whereNotNull('member_id')
                             ->orderByDesc('member_id')->first();
                         $nextNum = $lastMember
@@ -146,7 +141,6 @@ class MemberValidationResource extends Resource
                             'member_id'         => $memberId,
                         ]);
 
-                        // Buat entry membership awal (tier REGULAR, poin 0)
                         Membership::firstOrCreate(
                             ['user_id' => $record->id],
                             ['tier' => 'regular', 'total_points' => 0]
@@ -160,12 +154,12 @@ class MemberValidationResource extends Resource
                     }),
 
                 // Reject
-                Tables\Actions\Action::make('reject')
+                Action::make('reject')
                     ->label('Tolak')
                     ->icon('heroicon-o-x-circle')
                     ->color('danger')
                     ->form([
-                        \Filament\Forms\Components\Textarea::make('rejection_reason')
+                        Textarea::make('rejection_reason')
                             ->label('Alasan Penolakan (opsional)')
                             ->placeholder('Contoh: Data tidak lengkap, nomor HP tidak valid...')
                             ->rows(3),
@@ -180,15 +174,20 @@ class MemberValidationResource extends Resource
                             'validation_status' => 'ditolak',
                         ]);
 
+                        $msg = "{$record->name} telah ditolak.";
+                        if (!empty($data['rejection_reason'])) {
+                            $msg .= " Alasan: {$data['rejection_reason']}";
+                        }
+
                         Notification::make()
                             ->title('Akun Ditolak')
-                            ->body("{$record->name} telah ditolak." . ($data['rejection_reason'] ? " Alasan: {$data['rejection_reason']}" : ''))
+                            ->body($msg)
                             ->warning()
                             ->send();
                     }),
 
-                // Reaktivasi (untuk yang sudah ditolak)
-                Tables\Actions\Action::make('reactivate')
+                // Reactivate
+                Action::make('reactivate')
                     ->label('Aktifkan Ulang')
                     ->icon('heroicon-o-arrow-path')
                     ->color('info')

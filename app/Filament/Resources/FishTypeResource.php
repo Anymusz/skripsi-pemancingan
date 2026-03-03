@@ -4,11 +4,15 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\FishTypeResource\Pages;
 use App\Models\FishType;
+use Filament\Actions\Action;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\EditAction;
+use Filament\Forms\Components\TextInput;
+use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Schemas\Components\Section;
-use Filament\Forms\Components\TextInput;
-use Filament\Notifications\Notification;
 use Filament\Tables;
 use Filament\Tables\Table;
 
@@ -68,13 +72,13 @@ class FishTypeResource extends Resource
                             ->required(),
                         TextInput::make('stock_kg')
                             ->label('Stok Awal (Kg)')
-                            ->helperText('Untuk menambah stok gunakan tombol Restock di tabel.')
+                            ->helperText('Untuk menambah stok, gunakan tombol Restock di tabel.')
                             ->numeric()
                             ->suffix('kg')
                             ->required(),
                         TextInput::make('min_stock_threshold')
                             ->label('Batas Minimum Stok (Kg)')
-                            ->helperText('Sistem akan kirim alert jika stok di bawah angka ini.')
+                            ->helperText('Alert akan muncul jika stok di bawah angka ini.')
                             ->numeric()
                             ->suffix('kg')
                             ->required(),
@@ -119,8 +123,7 @@ class FishTypeResource extends Resource
                     ->placeholder('Belum pernah'),
             ])
             ->actions([
-                // Tombol Restock
-                Tables\Actions\Action::make('restock')
+                Action::make('restock')
                     ->label('Restock')
                     ->icon('heroicon-o-plus-circle')
                     ->color('success')
@@ -130,33 +133,32 @@ class FishTypeResource extends Resource
                             ->numeric()
                             ->suffix('kg')
                             ->required()
-                            ->minValue(0.1)
-                            ->hint('Masukkan berat ikan yang akan ditambahkan ke stok.'),
+                            ->minValue(0.1),
                     ])
                     ->action(function (FishType $record, array $data) {
                         $tambahan = (float) $data['jumlah_restock'];
+                        $stokBaru = (float)$record->stock_kg + $tambahan;
+
                         $record->update([
-                            'stock_kg'         => $record->stock_kg + $tambahan,
+                            'stock_kg'          => $stokBaru,
                             'last_restocked_at' => now(),
                         ]);
 
                         Notification::make()
                             ->title('Restock Berhasil!')
-                            ->body("Stok {$record->name} bertambah {$tambahan} kg. Total stok sekarang: " . ($record->stock_kg) . " kg.")
+                            ->body("Stok {$record->name} bertambah {$tambahan} kg. Total: {$stokBaru} kg.")
                             ->success()
                             ->send();
                     })
-                    ->modalHeading(fn (FishType $record): string => "Restock Ikan — {$record->name}")
+                    ->modalHeading(fn (FishType $record): string => "Restock — {$record->name}")
                     ->modalDescription(fn (FishType $record): string => "Stok saat ini: {$record->stock_kg} kg")
                     ->modalSubmitActionLabel('Simpan Restock'),
 
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                EditAction::make(),
+                DeleteAction::make(),
             ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                ]),
+                DeleteBulkAction::make(),
             ]);
     }
 
